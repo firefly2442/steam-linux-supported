@@ -1,11 +1,13 @@
 # Shiny for Python Core
-from shiny import App, reactive, render, ui
-import plotly.express as px
-from shinywidgets import output_widget, render_widget
-from icons import question_circle_fill
-from itables.shiny import DT
-import pandas as pd
 import itables.options as opt
+import pandas as pd
+import plotly.express as px
+from itables.shiny import DT
+from shiny import App, reactive, render, ui
+from shinywidgets import output_widget, render_widget
+
+from icons import question_circle_fill
+
 # increase sizing to prevent downsampling
 opt.maxBytes = "1MB"
 
@@ -22,75 +24,108 @@ app_ui = ui.page_fluid(
     ui.layout_sidebar(
         ui.sidebar(
             ui.h3("Filters"),
-            ui.input_selectize(  
+            ui.input_selectize(
                 "wishlist_owned_filter",
                 "Wishlist/Owned:",
-                choices={
-                    "Yes": "Wishlist",
-                    "No": "Owned"
-                },
+                choices={"Yes": "Wishlist", "No": "Owned"},
                 selected=["Yes", "No"],
-                multiple=True,  
+                multiple=True,
             ),
             ui.tooltip(
                 ui.span("", question_circle_fill),
                 ui.tags.ul(
-                    ui.tags.li("Verified - The game works great on Steam Deck, right out of the box."),
-                    ui.tags.li("Playable - The game may require some manual tweaking by the user."),
-                    ui.tags.li("Unsupported - The game is currently not functional on Steam Deck."),
+                    ui.tags.li(
+                        "Verified - The game works great on Steam Deck, right out of the box."
+                    ),
+                    ui.tags.li(
+                        "Playable - The game may require some manual tweaking by the user."
+                    ),
+                    ui.tags.li(
+                        "Unsupported - The game is currently not functional on Steam Deck."
+                    ),
                     ui.tags.li("Unknown - This game hasn't been checked yet."),
                 ),
                 placement="right",
                 id="steamdeck_supported_tooltip",
             ),
-            ui.input_selectize(  
-                "steamdecksupport_filter",  
-                "Steam Deck Supported:",  
-                {"No Steam Deck Information": "No Steam Deck Information",
-                  "Steam Deck Playable": "Steam Deck Playable",
-                  "Steam Deck Verified": "Steam Deck Verified",
-                  "Steam Deck Unsupported": "Steam Deck Unsupported"},  
-                selected=["No Steam Deck Information", "Steam Deck Playable",
-                          "Steam Deck Verified", "Steam Deck Unsupported"],
-                multiple=True,  
+            ui.input_selectize(
+                "steamdecksupport_filter",
+                "Steam Deck Supported:",
+                {
+                    "No Steam Deck Information": "No Steam Deck Information",
+                    "Steam Deck Playable": "Steam Deck Playable",
+                    "Steam Deck Verified": "Steam Deck Verified",
+                    "Steam Deck Unsupported": "Steam Deck Unsupported",
+                },
+                selected=[
+                    "No Steam Deck Information",
+                    "Steam Deck Playable",
+                    "Steam Deck Verified",
+                    "Steam Deck Unsupported",
+                ],
+                multiple=True,
             ),
             ui.input_slider(
-                "slider_max_playtime", "Game Playtime (minutes)", min=0, max=max(df['playtime_forever']), value=(0, max(df['playtime_forever']))
+                "slider_max_playtime",
+                "Game Playtime (minutes)",
+                min=0,
+                max=max(df["playtime_forever"]),
+                value=(0, max(df["playtime_forever"])),
             ),
             ui.input_slider(
-                "slider_protondb_submissions", "Total ProtonDB Submissions", min=0, max=max(df['total_protondb_submissions']), value=(0, max(df['total_protondb_submissions']))
+                "slider_protondb_submissions",
+                "Total ProtonDB Submissions",
+                min=0,
+                max=max(df["total_protondb_submissions"]),
+                value=(0, max(df["total_protondb_submissions"])),
             ),
             ui.input_slider(
-                "slider_protondb_supported_percentage", "ProtonDB Supported Percentage", min=0, max=max(df['protondb_supported_percentage']), value=(0, max(df['protondb_supported_percentage']))
+                "slider_protondb_supported_percentage",
+                "ProtonDB Supported Percentage",
+                min=0,
+                max=max(df["protondb_supported_percentage"]),
+                value=(0, max(df["protondb_supported_percentage"])),
             ),
             ui.input_slider(
-                "slider_metacritic", "Metacritic Score", min=0, max=max(df['metacritic']), value=(0, max(df['metacritic']))
+                "slider_metacritic",
+                "Metacritic Score",
+                min=0,
+                max=max(df["metacritic"]),
+                value=(0, max(df["metacritic"])),
             ),
         ),
         ui.h1("Shiny Steam Linux Game Support"),
-        ui.card("Presets",
+        ui.card(
+            "Presets",
             ui.layout_columns(
                 ui.input_action_button("reset_filters", "Reset Filters"),
                 ui.input_action_button("next_purchase", "Next Game Purchase"),
-                ui.input_action_button("problem_owned_games", "Potential Issues With Owned Games"),
-                ui.input_action_button("problem_wishlist_games", "Potential Issues With Wishlisted Games"),
-            )
+                ui.input_action_button(
+                    "problem_owned_games", "Potential Issues With Owned Games"
+                ),
+                ui.input_action_button(
+                    "problem_wishlist_games", "Potential Issues With Wishlisted Games"
+                ),
+            ),
         ),
         ui.layout_columns(
-            ui.card("Wishlist",
+            ui.card(
+                "Wishlist",
                 output_widget("wishlist_category_plot"),
                 output_widget("wishlist_protondb_percentage_histogram"),
                 output_widget("wishlist_protondb_numreviews_histogram"),
             ),
-            ui.card("Owned Games",
+            ui.card(
+                "Owned Games",
                 output_widget("owned_category_plot"),
                 output_widget("owned_protondb_percentage_histogram"),
                 output_widget("owned_protondb_numreviews_histogram"),
-            )
+            ),
         ),
         ui.card("Games Table", ui.output_ui("renderTable")),
     )
 )
+
 
 def server(input, output, session):
 
@@ -114,9 +149,7 @@ def server(input, output, session):
 
         # Playtime range
         play_min, play_max = input.slider_max_playtime()
-        filtered = filtered[
-            filtered["playtime_forever"].between(play_min, play_max)
-        ]
+        filtered = filtered[filtered["playtime_forever"].between(play_min, play_max)]
 
         # ProtonDB submissions
         sub_min, sub_max = input.slider_protondb_submissions()
@@ -132,16 +165,14 @@ def server(input, output, session):
 
         # Metacritic score
         meta_min, meta_max = input.slider_metacritic()
-        filtered = filtered[
-            filtered["metacritic"].between(meta_min, meta_max)
-        ]
+        filtered = filtered[filtered["metacritic"].between(meta_min, meta_max)]
 
         return filtered
-    
+
     @reactive.calc
     def filteredWishlist():
         return reactiveDF()[reactiveDF()["on_wishlist"] == "Yes"]
-    
+
     @reactive.calc
     def filteredOwnedGames():
         return reactiveDF()[reactiveDF()["on_wishlist"] == "No"]
@@ -158,17 +189,13 @@ def server(input, output, session):
         )
 
         return ui.HTML(table)
-    
+
     @output
     @render_widget
     def wishlist_category_plot():
         data = filteredWishlist()
 
-        counts = (
-            data["resolved_category"]
-            .value_counts()
-            .reset_index()
-        )
+        counts = data["resolved_category"].value_counts().reset_index()
 
         counts.columns = ["resolved_category", "count"]
 
@@ -181,20 +208,18 @@ def server(input, output, session):
             title="Wishlist Games by Steam Deck Support Category",
         )
 
-        fig.update_layout(xaxis_title="", yaxis_title="Number of Games", showlegend=False)
+        fig.update_layout(
+            xaxis_title="", yaxis_title="Number of Games", showlegend=False
+        )
 
         return fig
-    
+
     @output
     @render_widget
     def owned_category_plot():
         data = filteredOwnedGames()
 
-        counts = (
-            data["resolved_category"]
-            .value_counts()
-            .reset_index()
-        )
+        counts = data["resolved_category"].value_counts().reset_index()
 
         counts.columns = ["resolved_category", "count"]
 
@@ -207,10 +232,12 @@ def server(input, output, session):
             title="Owned Games by Steam Deck Support Category",
         )
 
-        fig.update_layout(xaxis_title="", yaxis_title="Number of Games", showlegend=False)
+        fig.update_layout(
+            xaxis_title="", yaxis_title="Number of Games", showlegend=False
+        )
 
         return fig
-    
+
     @output
     @render_widget
     def wishlist_protondb_percentage_histogram():
@@ -229,7 +256,7 @@ def server(input, output, session):
         )
 
         return fig
-    
+
     @output
     @render_widget
     def owned_protondb_percentage_histogram():
@@ -248,7 +275,7 @@ def server(input, output, session):
         )
 
         return fig
-    
+
     @output
     @render_widget
     def wishlist_protondb_numreviews_histogram():
@@ -267,7 +294,7 @@ def server(input, output, session):
         )
 
         return fig
-    
+
     @output
     @render_widget
     def owned_protondb_numreviews_histogram():
@@ -286,7 +313,7 @@ def server(input, output, session):
         )
 
         return fig
-    
+
     @reactive.effect
     @reactive.event(input.reset_filters)
     def reset_filters():
@@ -296,12 +323,22 @@ def server(input, output, session):
         )
         ui.update_selectize(
             "steamdecksupport_filter",
-            selected=["No Steam Deck Information", "Steam Deck Playable",
-                        "Steam Deck Verified", "Steam Deck Unsupported"],
+            selected=[
+                "No Steam Deck Information",
+                "Steam Deck Playable",
+                "Steam Deck Verified",
+                "Steam Deck Unsupported",
+            ],
         )
         ui.update_slider("slider_max_playtime", value=(0, max(df["playtime_forever"])))
-        ui.update_slider("slider_protondb_submissions", value=(0, max(df["total_protondb_submissions"])))
-        ui.update_slider("slider_protondb_supported_percentage", value=(0, max(df["protondb_supported_percentage"])))
+        ui.update_slider(
+            "slider_protondb_submissions",
+            value=(0, max(df["total_protondb_submissions"])),
+        )
+        ui.update_slider(
+            "slider_protondb_supported_percentage",
+            value=(0, max(df["protondb_supported_percentage"])),
+        )
         ui.update_slider("slider_metacritic", value=(0, max(df["metacritic"])))
 
     @reactive.effect
@@ -316,8 +353,14 @@ def server(input, output, session):
             selected=["Steam Deck Playable", "Steam Deck Verified"],
         )
         ui.update_slider("slider_max_playtime", value=(0, max(df["playtime_forever"])))
-        ui.update_slider("slider_protondb_submissions", value=(20, max(df["total_protondb_submissions"])))
-        ui.update_slider("slider_protondb_supported_percentage", value=(75, max(df["protondb_supported_percentage"])))
+        ui.update_slider(
+            "slider_protondb_submissions",
+            value=(20, max(df["total_protondb_submissions"])),
+        )
+        ui.update_slider(
+            "slider_protondb_supported_percentage",
+            value=(75, max(df["protondb_supported_percentage"])),
+        )
         ui.update_slider("slider_metacritic", value=(75, max(df["metacritic"])))
 
     @reactive.effect
@@ -332,7 +375,10 @@ def server(input, output, session):
             selected=["No Steam Deck Information", "Steam Deck Unsupported"],
         )
         ui.update_slider("slider_max_playtime", value=(0, max(df["playtime_forever"])))
-        ui.update_slider("slider_protondb_submissions", value=(0, max(df["total_protondb_submissions"])))
+        ui.update_slider(
+            "slider_protondb_submissions",
+            value=(0, max(df["total_protondb_submissions"])),
+        )
         ui.update_slider("slider_protondb_supported_percentage", value=(0, 50))
         ui.update_slider("slider_metacritic", value=(0, max(df["metacritic"])))
 
@@ -348,7 +394,10 @@ def server(input, output, session):
             selected=["No Steam Deck Information", "Steam Deck Unsupported"],
         )
         ui.update_slider("slider_max_playtime", value=(0, max(df["playtime_forever"])))
-        ui.update_slider("slider_protondb_submissions", value=(0, max(df["total_protondb_submissions"])))
+        ui.update_slider(
+            "slider_protondb_submissions",
+            value=(0, max(df["total_protondb_submissions"])),
+        )
         ui.update_slider("slider_protondb_supported_percentage", value=(0, 50))
         ui.update_slider("slider_metacritic", value=(0, max(df["metacritic"])))
 

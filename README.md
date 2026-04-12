@@ -48,6 +48,12 @@ source .venv/bin/activate
 shiny run --reload --launch-browser app.py
 ```
 
+Linting and checks
+
+```shell
+pre-commit run -a
+```
+
 ## References
 
 * [https://github.com/bdefore/protondb-data](https://github.com/bdefore/protondb-data)
