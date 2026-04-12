@@ -1,0 +1,18 @@
+[project]
+name = "steam-linux-supported"
+version = "0.1.0"
+description = "Data processing to pull owned games, wishlist, Steam Deck supported, ProtonDB, and other details to create a Shiny Python dashboard showing projected Linux game support."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "itables>=2.7.3",
+    "pandas>=2.3.3",
+    "plotly>=6.7.0",
+    "pyarrow>=23.0.1",
+    "python-dotenv>=1.2.2",
+    "python-steam-api>=2.2.1",
+    "requests>=2.33.1",
+    "shiny>=1.6.0",
+    "shinywidgets>=0.7.2",
+    "tqdm>=4.67.3",
+]
